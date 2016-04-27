@@ -1,4 +1,4 @@
-package ru.julappdev.githubreps.model.data;
+package ru.julappdev.githubreps.model.dto;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by yulia on 26.04.16.
  */
-public class Repo {
+public class RepositoryDTO {
 
     @SerializedName("id")
     @Expose
@@ -19,7 +19,7 @@ public class Repo {
     private String fullName;
     @SerializedName("owner")
     @Expose
-    private Owner owner;
+    private OwnerDTO owner;
     @SerializedName("private")
     @Expose
     private boolean _private;
@@ -214,7 +214,7 @@ public class Repo {
     private String defaultBranch;
     @SerializedName("permissions")
     @Expose
-    private Permissions permissions;
+    private PermissionsDTO permissions;
     /**
      *
      * @return
@@ -274,7 +274,7 @@ public class Repo {
      * @return
      * The owner
      */
-    public Owner getOwner() {
+    public OwnerDTO getOwner() {
         return owner;
     }
 
@@ -283,7 +283,7 @@ public class Repo {
      * @param owner
      * The owner
      */
-    public void setOwner(Owner owner) {
+    public void setOwner(OwnerDTO owner) {
         this.owner = owner;
     }
 
@@ -1442,14 +1442,14 @@ public class Repo {
     /**
      * @return The permissions
      */
-    public Permissions getPermissions() {
+    public PermissionsDTO getPermissions() {
         return permissions;
     }
 
     /**
      * @param permissions The permissions
      */
-    public void setPermissions(Permissions permissions) {
+    public void setPermissions(PermissionsDTO permissions) {
         this.permissions = permissions;
     }
 }

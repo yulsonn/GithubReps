@@ -5,6 +5,5 @@ package ru.julappdev.githubreps.presenter;
  */
 public interface Presenter {
 
-    void onSearchButtonClick();
     void onStop();
 }

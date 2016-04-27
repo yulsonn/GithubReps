@@ -1,11 +1,8 @@
 package ru.julappdev.githubreps.model.api;
 
-import java.io.IOException;
-
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -15,16 +12,21 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class ApiModule {
 
-    private static final boolean ENABLE_AUTH = false;
-    private static final String AUTH_64 = "***"; //your code here
 
+    private static final boolean ENABLE_LOG = true;
+
+    private static final boolean ENABLE_AUTH = false;
+    private static final String AUTH_64 = "***";
+
+    private static final String BASE_URL = "https://api.github.com/";
 
     public static ApiInterface getApiInterface() {
 
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .addInterceptor(new Interceptor() {
-            @Override
-            public Response intercept(Interceptor.Chain chain) throws IOException {
+        OkHttpClient httpClient = new OkHttpClient();
+        OkHttpClient.Builder httBuilder = new OkHttpClient.Builder();
+
+        if (ENABLE_AUTH) {
+            httpClient.interceptors().add(chain -> {
                 Request original = chain.request();
                 Request request = original.newBuilder()
                         .header("Authorization", "Basic " + AUTH_64)
@@ -32,15 +34,22 @@ public class ApiModule {
                         .build();
 
                 return chain.proceed(request);
-            }
-        }).build();
+            });
+        }
 
+        if (ENABLE_LOG) {
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            httBuilder.addInterceptor(interceptor);
+        }
 
+        httpClient = httBuilder.build();
         Retrofit.Builder builder = new Retrofit.Builder().
-                baseUrl("https://api.github.com/")
+                baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create());
-        if (ENABLE_AUTH) builder.client(httpClient);
+
+        builder.client(httpClient);
 
         ApiInterface apiInterface = builder.build().create(ApiInterface.class);
         return apiInterface;

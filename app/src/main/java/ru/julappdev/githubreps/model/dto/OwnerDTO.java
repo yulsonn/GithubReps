@@ -1,4 +1,4 @@
-package ru.julappdev.githubreps.model.data;
+package ru.julappdev.githubreps.model.dto;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by yulia on 26.04.16.
  */
-public class Owner {
+public class OwnerDTO {
 
     @SerializedName("login")
     @Expose

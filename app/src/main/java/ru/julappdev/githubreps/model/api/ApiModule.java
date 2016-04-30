@@ -12,7 +12,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class ApiModule {
 
-
     private static final boolean ENABLE_LOG = true;
 
     private static final boolean ENABLE_AUTH = false;
@@ -22,8 +21,15 @@ public class ApiModule {
 
     public static ApiInterface getApiInterface() {
 
-        OkHttpClient httpClient = new OkHttpClient();
-        OkHttpClient.Builder httBuilder = new OkHttpClient.Builder();
+        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
+
+        if (ENABLE_LOG) {
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            httpClientBuilder.addInterceptor(interceptor);
+        }
+
+        OkHttpClient httpClient = httpClientBuilder.build();
 
         if (ENABLE_AUTH) {
             httpClient.interceptors().add(chain -> {
@@ -37,15 +43,8 @@ public class ApiModule {
             });
         }
 
-        if (ENABLE_LOG) {
-            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            httBuilder.addInterceptor(interceptor);
-        }
-
-        httpClient = httBuilder.build();
-        Retrofit.Builder builder = new Retrofit.Builder().
-                baseUrl(BASE_URL)
+        Retrofit.Builder builder = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create());
 

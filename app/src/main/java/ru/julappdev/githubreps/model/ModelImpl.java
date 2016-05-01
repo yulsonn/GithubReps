@@ -2,13 +2,17 @@ package ru.julappdev.githubreps.model;
 
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import ru.julappdev.githubreps.common.App;
+import ru.julappdev.githubreps.common.Const;
 import ru.julappdev.githubreps.model.api.ApiInterface;
-import ru.julappdev.githubreps.model.api.ApiModule;
 import ru.julappdev.githubreps.model.dto.BranchDTO;
 import ru.julappdev.githubreps.model.dto.ContributorDTO;
 import ru.julappdev.githubreps.model.dto.RepositoryDTO;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
+import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
 /**
@@ -17,12 +21,25 @@ import rx.schedulers.Schedulers;
 public class ModelImpl implements Model {
 
     private final Observable.Transformer schedulersTransformer;
-    private ApiInterface apiInterface = ApiModule.getApiInterface();
+
+    @Inject
+    protected ApiInterface apiInterface;
+
+    @Inject
+    @Named(Const.UI_THREAD)
+    Scheduler uiThread;
+
+    @Inject
+    @Named(Const.IO_THREAD)
+    Scheduler ioThread;
+
 
     public ModelImpl() {
-        schedulersTransformer = o -> ((Observable) o).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .unsubscribeOn(Schedulers.io()) // TODO: remove when https://github.com/square/okhttp/issues/1592 is fixed
+        App.getComponent().inject(this);
+        schedulersTransformer = o -> ((Observable) o)
+                .subscribeOn(Schedulers.io())
+                .observeOn(uiThread)
+                .unsubscribeOn(ioThread) // TODO: remove when https://github.com/square/okhttp/issues/1592 is fixed
         ;
     }
 

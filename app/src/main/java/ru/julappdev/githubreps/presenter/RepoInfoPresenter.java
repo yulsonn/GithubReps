@@ -5,6 +5,9 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import ru.julappdev.githubreps.common.App;
 import ru.julappdev.githubreps.presenter.mappers.RepoBranchesMapper;
 import ru.julappdev.githubreps.presenter.mappers.RepoContributorsMapper;
 import ru.julappdev.githubreps.presenter.vo.Branch;
@@ -22,26 +25,24 @@ public class RepoInfoPresenter extends BasePresenter {
     private static final String BUNDLE_BRANCHES_KEY = "BUNDLE_BRANCHES_KEY";
     private static final String BUNDLE_CONTRIBUTORS_KEY = "BUNDLE_CONTRIBUTORS_KEY";
 
-    private RepoInfoView view;
+    @Inject
+    protected RepoBranchesMapper branchesMapper;
 
-    private RepoBranchesMapper branchesMapper = new RepoBranchesMapper();
-    private RepoContributorsMapper contributorsMapper = new RepoContributorsMapper();
+    @Inject
+    protected RepoContributorsMapper contributorsMapper;
+
+    private RepoInfoView view;
 
     private List<Contributor> contributorList;
     private List<Branch> branchList;
 
     private Repository repository;
 
-    public RepoInfoPresenter(RepoInfoView view, Repository repository) {
-        this.view = view;
-        this.repository = repository;
-    }
-
     public void loadData() {
         String owner = repository.getOwnerName();
         String name = repository.getRepoName();
 
-        Subscription subscriptionBranches = dataRepository.getRepoBranches(owner, name)
+        Subscription subscriptionBranches = model.getRepoBranches(owner, name)
                 .map(branchesMapper)
                 .subscribe(new Observer<List<Branch>>() {
                     @Override
@@ -61,7 +62,7 @@ public class RepoInfoPresenter extends BasePresenter {
                 });
         addSubscription(subscriptionBranches);
 
-        Subscription subscriptionContributors = dataRepository.getRepoContributors(owner, name)
+        Subscription subscriptionContributors = model.getRepoContributors(owner, name)
                 .map(contributorsMapper)
                 .subscribe(new Observer<List<Contributor>>() {
                     @Override
@@ -83,7 +84,13 @@ public class RepoInfoPresenter extends BasePresenter {
         addSubscription(subscriptionContributors);
     }
 
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(RepoInfoView view, Repository repository) {
+        App.getComponent().inject(this);
+        this.view = view;
+        this.repository = repository;
+    }
+
+    public void onCreateView(Bundle savedInstanceState) {
 
         if (savedInstanceState != null) {
             contributorList = (List<Contributor>) savedInstanceState.getSerializable(BUNDLE_CONTRIBUTORS_KEY);

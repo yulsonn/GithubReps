@@ -8,8 +8,12 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import ru.julappdev.githubreps.common.App;
 import ru.julappdev.githubreps.presenter.mappers.RepoListMapper;
 import ru.julappdev.githubreps.presenter.vo.Repository;
+import ru.julappdev.githubreps.view.ActivityCallback;
 import ru.julappdev.githubreps.view.RepoListView;
 import rx.Observer;
 import rx.Subscription;
@@ -23,19 +27,30 @@ public class RepoListPresenter extends BasePresenter {
 
     private RepoListView view;
 
-    private RepoListMapper repoListMapper = new RepoListMapper();
+    @Inject
+    protected RepoListMapper repoListMapper;
 
     private List<Repository> repoList;
 
-    public RepoListPresenter(RepoListView view) {
+    private ActivityCallback activityCallback;
+
+    // for DI
+    @Inject
+    public RepoListPresenter() {
+    }
+
+    public RepoListPresenter(RepoListView view, ActivityCallback activityCallback) {
+        super();
+        App.getComponent().inject(this);
         this.view = view;
+        this.activityCallback = activityCallback;
     }
 
     public void onSearchButtonClick() {
         String name = view.getUserName();
         if (TextUtils.isEmpty(name)) return;
 
-        Subscription subscription = dataRepository.getRepoList(name)
+        Subscription subscription = model.getRepoList(name)
                 .map(repoListMapper)
                 .subscribe(new Observer<List<Repository>>() {
                     @Override
@@ -60,7 +75,7 @@ public class RepoListPresenter extends BasePresenter {
         addSubscription(subscription);
     }
 
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreateView(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             repoList = (List<Repository>) savedInstanceState.getSerializable(BUNDLE_REPO_LIST_KEY);
         }

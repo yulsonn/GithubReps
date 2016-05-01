@@ -15,9 +15,14 @@ import android.widget.EditText;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import ru.julappdev.githubreps.R;
+import ru.julappdev.githubreps.injection.component.DaggerViewComponent;
+import ru.julappdev.githubreps.injection.component.ViewComponent;
+import ru.julappdev.githubreps.injection.module.ViewDynamicModule;
 import ru.julappdev.githubreps.presenter.BasePresenter;
 import ru.julappdev.githubreps.presenter.RepoListPresenter;
 import ru.julappdev.githubreps.presenter.vo.Repository;
@@ -39,11 +44,14 @@ public class RepoListFragment extends BaseFragment implements RepoListView {
     @Bind(R.id.button_search)
     Button searchButton;
 
-    private RepoListPresenter presenter = new RepoListPresenter(this);
+    @Inject
+    RepoListPresenter presenter;
 
     private RepoListAdapter adapter;
 
     private ActivityCallback activityCallback;
+
+    private ViewComponent viewComponent;
 
     @Override
     public void onAttach(Activity activity) {
@@ -59,6 +67,21 @@ public class RepoListFragment extends BaseFragment implements RepoListView {
         }
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (viewComponent == null) {
+            viewComponent = DaggerViewComponent.builder()
+                    .viewDynamicModule(new ViewDynamicModule(this, activityCallback))
+                    .build();
+        }
+        viewComponent.inject(this);
+    }
+
+    public void setViewComponent(ViewComponent viewComponent) {
+        this.viewComponent = viewComponent;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,7 +95,7 @@ public class RepoListFragment extends BaseFragment implements RepoListView {
 
         searchButton.setOnClickListener(v -> presenter.onSearchButtonClick());
 
-        presenter.onCreate(savedInstanceState);
+        presenter.onCreateView(savedInstanceState);
 
         return view;
     }

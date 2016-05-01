@@ -12,9 +12,12 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import ru.julappdev.githubreps.R;
+import ru.julappdev.githubreps.common.App;
 import ru.julappdev.githubreps.presenter.BasePresenter;
 import ru.julappdev.githubreps.presenter.RepoInfoPresenter;
 import ru.julappdev.githubreps.presenter.vo.Branch;
@@ -43,7 +46,8 @@ public class RepoInfoFragment extends BaseFragment implements RepoInfoView {
     @Bind(R.id.linear_layout)
     View layout;
 
-    private RepoInfoPresenter presenter;
+    @Inject
+    RepoInfoPresenter presenter;
 
     public static RepoInfoFragment newInstance(Repository repository) {
         RepoInfoFragment myFragment = new RepoInfoFragment();
@@ -58,11 +62,19 @@ public class RepoInfoFragment extends BaseFragment implements RepoInfoView {
 
     @Override
     protected BasePresenter getPresenter() {
+        App.getComponent().inject(this);
         return presenter;
     }
 
     private Repository getRepositoryVO() {
         return (Repository) getArguments().getSerializable(BUNDLE_REPO_KEY);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        App.getComponent().inject(this);
+        presenter.onCreate(this, getRepositoryVO());
     }
 
     @Nullable
@@ -77,8 +89,7 @@ public class RepoInfoFragment extends BaseFragment implements RepoInfoView {
         branchesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         contributorsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        presenter = new RepoInfoPresenter(this, getRepositoryVO());
-        presenter.onCreate(savedInstanceState);
+        presenter.onCreateView(savedInstanceState);
 
         return view;
     }
